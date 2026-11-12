@@ -5,16 +5,17 @@ cd /d "%~dp0"
 set EASYX=%~dp0third_party\easyx
 
 rem EasyX MinGW libs need the MSVCRT build of MinGW-w64.
-rem WinGet installs it under a path with a space, which breaks linking,
-rem so prefer the space-free copy when it exists.
-set "MINGW=C:\Users\Public\mingw64_msvcrt\bin"
-if exist "%MINGW%\g++.exe" set "PATH=%MINGW%;%PATH%"
+rem Optional space-free local copy (WinGet's path contains a space, which
+rem can break linking). Ignored on machines where it does not exist.
+if exist "C:\Users\Public\mingw64_msvcrt\bin\g++.exe" set "PATH=C:\Users\Public\mingw64_msvcrt\bin;%PATH%"
+rem Explicit override: set MINGW_BIN to the bin directory of an MSVCRT MinGW-w64.
+if defined MINGW_BIN set "PATH=%MINGW_BIN%;%PATH%"
 
 where g++ >nul 2>nul
 if errorlevel 1 (
     echo [ERROR] g++ not found.
-    echo         Expected toolchain: %MINGW%
-    echo         Install MSVCRT MinGW-w64 or add g++ to PATH.
+    echo         Install an MSVCRT build of MinGW-w64 and add g++ to PATH,
+    echo         or set MINGW_BIN to its bin directory.
     pause
     exit /b 1
 )

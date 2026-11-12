@@ -2,12 +2,32 @@
 
 纯 C99 实现。**图形版启动即进入窗口界面，不出现黑色控制台。**
 
-## 一、两个可执行文件
+**直接体验：** 从 [Releases](https://github.com/dengyuming301/airline-ticketing-system/releases/latest) 下载 `airline_gui.exe`，Windows 10/11 x64 双击运行，无需安装 EasyX（已静态链接）。
 
-| 文件 | 说明 |
+## 界面预览
+
+**主菜单**
+
+![主菜单](docs/main-menu.png)
+
+**A330 宽体机座位图**：点选商务舱 1A 后自动切换并高亮该舱位。
+
+![A330 座位图](docs/seat-map-a330.png)
+
+**余票不足时推荐同目的地航班**：CA1501 经济舱已满，推荐同日的 MU5301 广州→上海。
+
+![推荐同目的地航班](docs/recommend.png)
+
+**修改定额合法性校验**：CA1501 已售 66 张，定额不能改为 50。
+
+![定额校验](docs/capacity-check.png)
+
+## 一、运行方式
+
+| 文件 | 获取方式 |
 |---|---|
-| `airline_gui.exe` | **双击运行**，打开 EasyX 图形界面 |
-| `airline_console.exe` | 控制台版，命令行演示 / 答辩备用 |
+| `airline_gui.exe` | Release 中直接下载，**双击运行**，打开 EasyX 图形界面 |
+| `airline_console.exe` | 运行 `build_console.bat` 编译生成；控制台演示 / 答辩备用 |
 
 所有输入框都支持**回车 = 确定、Esc = 取消**。
 
@@ -19,8 +39,6 @@
 
 ```
 航空客运订票系统/
-├─ airline_gui.exe         图形版（已编译）
-├─ airline_console.exe     控制台版（已编译）
 ├─ src/
 │  ├─ airline.h            数据结构与接口
 │  ├─ airline.c            核心业务：航线、订票、退票、候补、超售、登机调整
@@ -28,8 +46,10 @@
 │  ├─ easyx_view.c         座位图绘制 / 点选座位
 │  └─ main.c               控制台版菜单
 ├─ third_party/easyx/      EasyX for MinGW 头文件与 64 位库
+├─ docs/                   README 界面截图
 ├─ build_easyx.bat         编译图形版 → airline_gui.exe
 ├─ build_console.bat       编译控制台版 → airline_console.exe
+├─ LICENSE
 └─ README.md
 ```
 
@@ -68,7 +88,7 @@
 | 程序启动时至少 15 条航线 | `airline.c` 的 `kInit[]` 硬编码 15 条 |
 | 查询航线（按起点或终点） | 主菜单“查询航线”；列表显示航班号、机型、飞行日、余票 |
 | 订票：有余票出座位号，否则询问候补 | 座位图点选或自动分配；失败时提示并推荐同目的地航班，可登记候补 |
-| 退票：退票后依次询问候补客户 | 退票后按候补队列顺序自动补位并显示补位名单 |
+| 退票：退票后依次询问候补客户 | 退票后按候补队列顺序逐个询问，接受则为其出票，拒绝则询问下一位 |
 | 管理员新建航线 | 管理员 → 新建航线 |
 | 管理员修改航线（合法性校验） | 修改定额时不能小于已售数量，缩容不能挤掉已占座位 |
 | 查看并打印所有订票记录 | 管理员 → 查看全部订票记录（可上下翻页） |
@@ -77,7 +97,7 @@
 
 | 题目要求 | 实现 |
 |---|---|
-| 订票失败推荐同目的地其它航线 | 订票失败弹窗后，列表中可继续选择其它航班；核心函数 `recommend_flights()` 控制台版会直接打印推荐 |
+| 订票失败推荐同目的地其它航线 | 订票失败弹窗直接列出最多 3 条同目的地、同日、同舱位且余票足够的航班（含同日余票）；控制台版打印同样的列表 |
 | 允许超卖，阈值自定 | 每舱位超售阈值 = 定额的 10%（至少 1 张），字段 `overbook` |
 | 模拟登机：经济→商务→头等升舱，仍超员则强制退票 | 管理员 / 主菜单“模拟登机”按钮 |
 | 强制退票原则：最后订票先退 | 按全局订票序号 `seq` 取最大者 |
@@ -86,6 +106,13 @@
 | 订票时可选座位 | 订票流程中直接点击座位图选择，黄底为已选；也可不选 |
 
 ## 五、编译
+
+两个脚本会使用 PATH 中的 `gcc` / `g++`；如果设置了环境变量 `MINGW_BIN`，则优先使用它指向的 `bin` 目录：
+
+```bat
+set MINGW_BIN=C:\mingw64_msvcrt\bin
+build_easyx.bat
+```
 
 ### 图形版（需要 EasyX + MSVCRT 版 MinGW）
 
@@ -96,8 +123,9 @@ build_easyx.bat
 - EasyX 的 MinGW 库是 **MSVCRT** 版本；若 gcc 是 UCRT 版本，链接会报 `__imp___iob_func`。
 - `gui.c` 和 `easyx_view.c` 按 C++ 编译（EasyX 依赖 C++），`airline.c` 按 C99 编译。
 - 使用 `-mwindows`，所以运行时不带控制台窗口。
+- EasyX 头文件和库已经放在 `third_party/easyx/`，不需要额外安装。
 
-### 控制台版（任何 C99 编译器）
+### 控制台版（C99 编译器）
 
 ```bat
 build_console.bat
@@ -142,3 +170,7 @@ Dev-C++：新建 Console Application，把 `src` 下 `airline.c`、`main.c`、`e
 ## 九、编码说明
 
 源码统一 UTF-8。控制台版在 `main()` 中调用 `SetConsoleOutputCP(CP_UTF8)`；图形版所有中文通过 `MultiByteToWideChar` / `WideCharToMultiByte` 转换后显示。
+
+## 十、许可与第三方组件
+
+本项目源码采用 [MIT License](LICENSE)。`third_party/easyx/` 下的 EasyX 头文件与 MinGW 库版权归 EasyX 作者所有，按其自带许可用于学习与非商业用途，本项目仅作依赖打包，未做修改。

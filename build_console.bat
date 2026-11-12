@@ -2,16 +2,17 @@
 setlocal
 cd /d "%~dp0"
 
-rem WinGet installs MinGW under "C:\Users\Hyper X\..." (path contains a space),
-rem which breaks the linker. Use the space-free copy instead when available.
-set "MINGW=C:\Users\Public\mingw64\bin"
-if exist "%MINGW%\gcc.exe" set "PATH=%MINGW%;%PATH%"
+rem Optional space-free local copy (WinGet's path contains a space, which
+rem can break linking). Ignored on machines where it does not exist.
+if exist "C:\Users\Public\mingw64\bin\gcc.exe" set "PATH=C:\Users\Public\mingw64\bin;%PATH%"
+rem Explicit override: set MINGW_BIN to the bin directory of MinGW-w64.
+if defined MINGW_BIN set "PATH=%MINGW_BIN%;%PATH%"
 
 where gcc >nul 2>nul
 if errorlevel 1 (
     echo [ERROR] gcc not found.
-    echo         Expected toolchain: %MINGW%
-    echo         Install MinGW-w64 or add gcc to PATH.
+    echo         Install MinGW-w64 and add gcc to PATH,
+    echo         or set MINGW_BIN to its bin directory.
     pause
     exit /b 1
 )
