@@ -1,0 +1,15 @@
+# 编译产物
+build/
+*.o
+*.obj
+*.exe
+
+# 本地快捷方式（里面是绝对路径）
+*.lnk
+
+# 编辑器/IDE 配置
+.vscode/
+.idea/
+
+# 如果公开仓库不希望附带第三方 EasyX 库，取消下面这行注释
+# third_party/easyx/
