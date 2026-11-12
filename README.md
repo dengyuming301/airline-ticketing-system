@@ -27,7 +27,7 @@
 | 文件 | 获取方式 |
 |---|---|
 | `airline_gui.exe` | Release 中直接下载，**双击运行**，打开 EasyX 图形界面 |
-| `airline_console.exe` | 运行 `build_console.bat` 编译生成；控制台演示 / 答辩备用 |
+| `airline_console.exe` | Release 中直接下载，命令行运行；也可用 `build_console.bat` 自行编译 |
 
 所有输入框都支持**回车 = 确定、Esc = 取消**。
 
